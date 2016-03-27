@@ -7,10 +7,16 @@ import java.util.ArrayList;
  */
 public class Utils {
     public static MatVector array2MatVector(ArrayList<Mat> list) {
-        return null;
+        Mat[] matArray = new Mat[list.size()];
+        matArray = list.toArray(matArray);
+        return new MatVector(matArray);
     }
 
     public static int[] array2IntArray(ArrayList<Integer> list) {
-        return null;
+        int[] intArray = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            intArray[i] = list.get(i).intValue();
+        }
+        return intArray;
     }
 }
