@@ -6,13 +6,13 @@ import java.util.ArrayList;
  * Created by trill on 2016-03-27.
  */
 public class Utils {
-    public static MatVector array2MatVector(ArrayList<Mat> list) {
+    public static MatVector arrayList2MatVector(ArrayList<Mat> list) {
         Mat[] matArray = new Mat[list.size()];
         matArray = list.toArray(matArray);
         return new MatVector(matArray);
     }
 
-    public static int[] array2IntArray(ArrayList<Integer> list) {
+    public static int[] arrayList2IntArray(ArrayList<Integer> list) {
         int[] intArray = new int[list.size()];
         for (int i = 0; i < list.size(); i++) {
             intArray[i] = list.get(i).intValue();

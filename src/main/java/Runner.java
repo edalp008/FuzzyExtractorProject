@@ -7,7 +7,7 @@ public class Runner {
     static public void main(String[] args) {
         System.out.println("We Running It Now!");
         DataSet dataSet = Loader.load("faces", true);
-        EigenFacesRecognizer recognizer = new EigenFacesRecognizer(Utils.array2MatVector(dataSet.getFaces()),
-                Utils.array2IntArray(dataSet.getLabels()));
+        EigenFacesRecognizer recognizer = new EigenFacesRecognizer(Utils.arrayList2MatVector(dataSet.getFaces()),
+                Utils.arrayList2IntArray(dataSet.getLabels()));
     }
 }
