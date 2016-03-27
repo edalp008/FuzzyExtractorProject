@@ -1,0 +1,15 @@
+# All classes
+*.class
+
+# Packages
+*.jar
+
+# Build
+target
+
+# IDE
+.idea
+FuzzyExtractor.iml
+
+# OS
+.DS_Store
