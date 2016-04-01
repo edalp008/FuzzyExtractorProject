@@ -12,6 +12,10 @@ public class Result {
         this.metric = metric;
     }
 
+    public String toString() {
+        return "Predicted Label: " + this.predictedLabel + ", Metric: " + this.metric;
+    }
+
     public int getPredictedLabel() {
         return predictedLabel;
     }
