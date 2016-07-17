@@ -1,4 +1,6 @@
-import org.bytedeco.javacpp.opencv_core.*;
+//import org.bytedeco.javacpp.opencv_core.*;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
 import java.util.ArrayList;
 
 /**
@@ -10,6 +12,9 @@ public class DataSet {
     private ArrayList<Integer> labels;
     private ArrayList<Mat> testFaces;
     private ArrayList<Integer> testLabels;
+
+    //added by Erica
+    private ArrayList<ArrayList<Mat>> imagesByFaces;
 
     /* Constructor */
     public DataSet(ArrayList<Mat> faces, ArrayList<Integer> labels,
@@ -24,9 +29,15 @@ public class DataSet {
     public ArrayList<Mat> getFaces() {
         return faces;
     }
-
     public void setFaces(ArrayList<Mat> faces) {
         this.faces = faces;
+    }
+
+    public ArrayList<ArrayList<Mat>> getTrainingPeople() {
+        return imagesByFaces;
+    }
+    public void setPeople(ArrayList<ArrayList<Mat>> faces) {
+        this.imagesByFaces = faces;
     }
 
     public ArrayList<Integer> getLabels() {
