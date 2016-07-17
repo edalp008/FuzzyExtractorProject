@@ -1,4 +1,3 @@
-
 import org.opencv.core.Mat;
 import org.opencv.core.Core;
 import java.util.ArrayList;
@@ -151,9 +150,6 @@ public class Runner {
         System.out.println("Test Fourth Person's Template against picture of Fourth Person : ");
         template4.test(fourthPerson.getTestFaces().get(0));
 */
-
-
-
 
     }
 }

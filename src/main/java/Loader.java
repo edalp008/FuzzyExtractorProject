@@ -15,6 +15,7 @@ public class Loader {
     private static final double IMAGE_RATIO = 0.7;
     private static final double ALT_IMAGE_RATIO = 0.7;
 
+
     public static DataSet load(String path, boolean includeTests) {
 
         /* Define variables */
@@ -58,6 +59,7 @@ public class Loader {
                         } else {
                             faces.add(Highgui.imread(image.getPath(), 0));
                             tempPerson.add(Highgui.imread(image.getPath(), 0));
+
                             labels.add(labelCounter);
                         }
                     }
@@ -145,6 +147,7 @@ public class Loader {
                     testLabels.add(person + 1);
                 } else {
                     faces.add(Highgui.imread(images.get(i).getPath(), 0));
+
                     labels.add(person + 1);
                 }
             }
