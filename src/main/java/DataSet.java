@@ -12,8 +12,6 @@ public class DataSet {
     private ArrayList<Integer> labels;
     private ArrayList<Mat> testFaces;
     private ArrayList<Integer> testLabels;
-
-    //added by Erica
     private ArrayList<ArrayList<Mat>> imagesByFaces;
 
     /* Constructor */

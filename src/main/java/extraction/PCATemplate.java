@@ -23,6 +23,7 @@ public class   PCATemplate {
     private Mat continuousDomain;
     private int numberOfPeopleInTrainingSet;
     private ArrayList[][] codebook;
+    private Mat vectors;
     //In this constructor, execute the functions to extract the features and make the template
     /*
         @param ArrayList<ArrayList<Mat>> This is a list of people, each entry for a person contains training data for this person
@@ -30,6 +31,7 @@ public class   PCATemplate {
      */
     public PCATemplate(ArrayList<ArrayList<Mat>> trainingImages){
         featureMatrix = new Mat();
+        vectors = new Mat();
         codebook = getTrainingCodeBook(trainingImages);
         numberOfPeopleInTrainingSet = trainingImages.size();
 
@@ -60,13 +62,23 @@ public class   PCATemplate {
         //used for extracting 1 person
         Mat tempImagePixelsVector;
         Mat tempTemplate = new Mat();
-
+        Mat tempMatrix;
         //used to make the space
         //Make the continuous space
         //Things contained in channels, 1->midpoint, 2->max, 3->mins, 4->ranges
+//get the vector matrix that we are going to multiply
 
-        int numberOfComponents = (trainingUserImages.get(0).size()>20) ? 20:trainingUserImages.get(0).size();
-        continuousDomain = new Mat(numberOfComponents, trainingUserImages.size(), opencv_core.CV_64FC4);
+        Mat matToPCA = new Mat();
+        for (ArrayList<Mat> person: trainingUserImages) {
+            for (int i = 0; i < person.size(); i++) {
+                tempMatrix = person.get(i).reshape(0, 1).clone();
+                matToPCA.push_back(tempMatrix);
+            }
+        }
+        Core.PCACompute(matToPCA, new Mat(), vectors, NUM_OF_COMPONENTS);
+
+        //int numberOfComponents = ((trainingUserImages.get(0).size()*trainingUserImages.size())>20) ? NUM_OF_COMPONENTS:trainingUserImages.get(0).size();
+        continuousDomain = new Mat(NUM_OF_COMPONENTS, trainingUserImages.size(), opencv_core.CV_64FC4);
         int index = 0;
 
         //lets create the templates for everyone
@@ -75,24 +87,20 @@ public class   PCATemplate {
             //loop trough all of the images to get a matrix with all of the image's pixels and make a 10304XNumbimages matrix
             //load the new matrix with imgs (they are in greyscale)
 
-            Mat enrollementMatrix = new Mat();
+            Mat enrollmentMatrix = new Mat();
             Mat tempMultipliesMatrix = new Mat();
-            Mat tempMatrix;
+
             for (int i = 0; i < person.size(); i++) {
                 tempMatrix = person.get(i).reshape(0, 1).clone();
-
-                enrollementMatrix.push_back(tempMatrix);
+                enrollmentMatrix.push_back(tempMatrix);
             }
 
-            Mat vectors = new Mat();
-            Core.PCACompute(enrollementMatrix, new Mat(), vectors, NUM_OF_COMPONENTS);
+            Mat transenrollmentMatrix = new Mat(enrollmentMatrix.cols(), enrollmentMatrix.rows(), vectors.type());
+            transenrollmentMatrix = enrollmentMatrix.t();
 
-            Mat transEnrollementMatrix = new Mat(enrollementMatrix.cols(), enrollementMatrix.rows(), vectors.type());
-            transEnrollementMatrix = enrollementMatrix.t();
+            Mat tempTrans = new Mat(transenrollmentMatrix.rows(), transenrollmentMatrix.cols(), vectors.type());
 
-            Mat tempTrans = new Mat(transEnrollementMatrix.rows(), transEnrollementMatrix.cols(), vectors.type());
-
-            transEnrollementMatrix.convertTo(tempTrans, vectors.type());
+            transenrollmentMatrix.convertTo(tempTrans, vectors.type());
 
             Core.gemm(vectors, tempTrans, 1, new Mat(), 0, tempMultipliesMatrix);
 
@@ -108,9 +116,11 @@ public class   PCATemplate {
                 range = minsAndMax.maxVal-minsAndMax.minVal;
                 midpoint = (minsAndMax.maxVal-minsAndMax.minVal)/2+minsAndMax.minVal;
                 tuple[0] = minsAndMax.minVal;tuple[1] = minsAndMax.maxVal;tuple[2] = range;tuple[3] = midpoint;
+
                 continuousDomain.put(z,index, tuple);
             }
             index++;
+
         }
 
 //        for (int i = 0; i<7;i++){
@@ -135,7 +145,7 @@ public class   PCATemplate {
         int L = 0;
 
         for (int i = 0; i<continuousDomain.rows();i++){
-            elementTuple = continuousDomain.get(i,0);
+            elementTuple = continuousDomain.get(i,1);
             componentMins[i] = elementTuple[0];
             componentMaxs[i] = elementTuple[1];
             minRanges[i] = elementTuple[2];
@@ -146,10 +156,9 @@ public class   PCATemplate {
                 if ( elementTuple[2]<minRanges[i]){minRanges[i] = elementTuple[2];}
             }
 
-
+            System.out.println(elementTuple[0]+","+elementTuple[1]+","+elementTuple[2]+","+elementTuple[3]+" - "+index+" i:"+i);
 
             //build the discrete ranges for users and components
-
             for (int b = 0;b<continuousDomain.cols();b++){
                 elementTuple = continuousDomain.get(i,b);
 
@@ -158,7 +167,7 @@ public class   PCATemplate {
             }
 //            System.out.println(" ");
 
-            R = Math.floor(Math.random()*10);
+            R = Math.floor(Math.random()*100);
             L = 0;
 
             //find an L such that MNj -rj + Lj*Alphaj >= MXj
@@ -166,13 +175,13 @@ public class   PCATemplate {
                 L++;//System.out.println((componentMins[i]-R+L*minRanges[i])+"\t\t\t"+componentMaxs[i]);
             }
 
-            double dicrete[] = new double[L];
-            for(int l = 0; l<L;l++) {
+            double dicrete[] = new double[L+1];
+            for(int l = 0; l<(L+1);l++) {
                 dicrete[l] = componentMins[i]-R +l*alpha*minRanges[i];
             }
 
             discreteDomain.add(dicrete);
-
+//            System.out.println("The L value "+L+" - "+discreteDomain.get(i)[0]+","+discreteDomain.get(i)[1]+","+discreteDomain.get(i)[2]);
 //            System.out.println(componentMins[i]+" \t\t"+componentMaxs[i]+" \t\t"+minRanges[i]);
         }
 
@@ -182,14 +191,19 @@ public class   PCATemplate {
         ArrayList<Double> codebook [][] = new ArrayList[continuousDomain.rows()][continuousDomain.cols()];
         ArrayList<Double> tempVec = new ArrayList<Double>();
         for (int i = 0; i<continuousDomain.rows();i++) {
+            System.out.println(discreteDomain.get(i).length);
             for (int b = 0; b < continuousDomain.cols(); b++) {
                 tempVec = new ArrayList<Double>();
 
                 //get the codewords from the C discrete domain and find out the number of terms that we can get
+                //to include the element 0, put the indexTerm to 0
                 int indexTerm = 0;
+
                 while((indexTerm*(int)(2*discreteRanges[i][b]+1))<discreteDomain.get(i).length){
-                    tempVec.add(discreteDomain.get(i)[(indexTerm*(int)(2*discreteRanges[i][b])+1)]);
+                    //System.out.println("ind"+(indexTerm * (int) Math.floor((2 * discreteRanges[i][b]) + 1)));
+                    tempVec.add(discreteDomain.get(i)[(indexTerm * (int) Math.floor((2 * discreteRanges[i][b]) + 1))]);
                     indexTerm++;
+
                 }
 
                 codebook[i][b] = tempVec;
@@ -198,17 +212,17 @@ public class   PCATemplate {
         //Print the codebook
 
 
-//        for (int i = 0; i<continuousDomain.rows();i++) {
-//            for (int b = 0; b < continuousDomain.cols(); b++) {
-//                System.out.print(codebook[i][b].size());
-//                for (Double code:codebook[i][b]
-//                     ) {
-//                    System.out.print(code+" ");
-//                }
-//                System.out.print("\t\t\t|");
-//            }
-//            System.out.println("");
-//        }
+        for (int i = 0; i<continuousDomain.rows();i++) {
+            for (int b = 0; b < continuousDomain.cols(); b++) {
+                System.out.print(codebook[i][b].size()+","+discreteRanges[i][b]+","+discreteDomain.get(i).length);
+                for (Double code:codebook[i][b]
+                     ) {
+                    System.out.print(code+" ");
+                }
+                System.out.print("\t\t\t|");
+            }
+            System.out.println("");
+        }
         return codebook;
     }
 
@@ -224,36 +238,29 @@ public class   PCATemplate {
     public boolean testIfIncluded(ArrayList<Mat> testingUserImages){
         boolean userIndb = false;
         //same code as the code to get the codebook, only less images
-        //used for extracting 1 person
-        Mat tempImagePixelsVector;
-        Mat tempTemplate = new Mat();
 
-        //used to make the space
-        //Make the continuous space
-        //Things contained in channels, 1->midpoint, 2->max, 3->mins, 4->ranges
-        int numberOfComponents = (testingUserImages.size()>20) ? 20:testingUserImages.size();
         //we have one col because we are using 1 person
-        Mat testDomain = new Mat(numberOfComponents, 1, opencv_core.CV_64FC4);
+        Mat testDomain = new Mat(NUM_OF_COMPONENTS, 1, opencv_core.CV_64FC4);
         System.out.println("Creating the testing domain from "+ testingUserImages.size()+" pictures with Component Count : "+ NUM_OF_COMPONENTS);
         int index = 0;
 
         //loop trough all of the images to get a matrix with all of the image's pixels and make a 10304XNumbimages matrix
         //load the new matrix with imgs (they are in greyscale)
-        Mat enrollementMatrix = new Mat();
+        Mat enrollmentMatrix = new Mat();
         Mat tempMultipliesMatrix = new Mat();
         Mat tempMatrix;
         //lets create the templates for everyone
         for (Mat image: testingUserImages) {
             tempMatrix = image.reshape(0, 1).clone();
-            enrollementMatrix.push_back(tempMatrix);
+            enrollmentMatrix.push_back(tempMatrix);
         }
-        Mat vectors = new Mat();
-        Core.PCACompute(enrollementMatrix, new Mat(), vectors, NUM_OF_COMPONENTS);
-        Mat transEnrollementMatrix;
-        transEnrollementMatrix = enrollementMatrix.t();
 
-        Mat tempTrans = new Mat(transEnrollementMatrix.rows(), transEnrollementMatrix.cols(), vectors.type());
-        transEnrollementMatrix.convertTo(tempTrans, vectors.type());
+
+        Mat transenrollmentMatrix;
+        transenrollmentMatrix = enrollmentMatrix.t();
+
+        Mat tempTrans = new Mat(transenrollmentMatrix.rows(), transenrollmentMatrix.cols(), vectors.type());
+        transenrollmentMatrix.convertTo(tempTrans, vectors.type());
 
         Core.gemm(vectors, tempTrans, 1, new Mat(), 0, tempMultipliesMatrix);
         System.out.println(tempMultipliesMatrix);
@@ -262,6 +269,7 @@ public class   PCATemplate {
         double range;
         double midpoint;
 
+        System.out.println(testDomain);
         for (int z = 0; z < tempMultipliesMatrix.rows();z++)
         {
             double [] tuple = new double[4];
@@ -290,8 +298,12 @@ public class   PCATemplate {
         double closestCodeWordTraining[] = new double[testDomain.rows()];
         double shortestDistance;
         double shortestDistanceTraining;
+        int trueCount =1;
+        int falseCount =1;
+        double distanceBetweenTrainingAndTest;
         //simply get the midpoints
-
+        boolean match = false;
+        double sketch = 0.0;
         //test for all users
         for (int i = 0; i<continuousDomain.cols();i++){
             System.out.print (i+") ");
@@ -311,13 +323,40 @@ public class   PCATemplate {
                     if ((Math.abs(midpointsTraining[b] - (Double)codebook[b][i].get(k)))<shortestDistanceTraining){
                         shortestDistanceTraining = Math.abs(midpointsTraining[b] - (Double)codebook[b][i].get(k));
                         closestCodeWordTraining[b] = (Double)codebook[b][i].get(k);
+                        sketch = midpointsTraining[b] - (Double)codebook[b][i].get(k);
                     }
+
                 }
+
+                if ((sketch+closestCodeWordTest[b])==midpointsTraining[b]){trueCount++;}else{falseCount++;}
+
+//                //take the closest
+//                if(closestCodeWordTest[b] - closestCodeWordTraining[b] == 0){
+//                    trueCount++;
+//                    System.out.println("Truecount " + trueCount);
+//                }
+//                else {
+//                    falseCount++;
+//                    System.out.println(" Falsecount" + falseCount);
+//                }
+//                if((shortestDistance + closestCodeWordTest[b]) == b){
+//                    trueCount++;
+//                    System.out.println("Truecount " + trueCount);
+//                } else{
+//                    falseCount++;
+//                System.out.println("Falsecount " + falseCount);
+
                 //get the distances of the codewords
-                System.out.print (midpoints[b]+","+Math.round(closestCodeWordTest[b])+" - "+Math.round(midpointsTraining[b])+","+Math.round(closestCodeWordTraining[b])+"\t"+codebook[b][i].size()+"\tmin:"+elementTupleTraining[0]+"max:"+elementTupleTraining[1]+"\t");
+                //System.out.print("Component#" + b + "Test Mid,closest:" + Math.round(midpoints[b]) + "," + Math.round(closestCodeWordTest[b]) + " - Training Mid,closest:" + Math.round(midpointsTraining[b]) + "," + Math.round(closestCodeWordTraining[b]) + "\t");
                 //get closest codeword from the training data
             }
-            System.out.println("-");
+
+            if (trueCount==testDomain.rows()) {
+                userIndb=true;
+            }
+
+            System.out.println("True Count: "+trueCount);
+            trueCount =0;
         }
 
         //for each midpoint find the closest codeword
@@ -326,4 +365,3 @@ public class   PCATemplate {
     }
 
 }
-
