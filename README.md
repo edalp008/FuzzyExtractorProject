@@ -9,12 +9,12 @@ Also included is:
 
 ####Mac/Linux
 In order to install and include opencv in this project, we recommend you:
-1. create a .jar file of the opencv interface, this might be a good resource https://www.youtube.com/watch?v=2RuJ94Xg3jw&ab_channel=RobotsandCode 
-2. Once the .jar file is create, you need to add it to the libraries in your project
-3. We then have to include the opencv librbaries that were installed on the computer, this couldook something like         
+  1. Create a .jar file of the opencv interface, this might be a good resource https://www.youtube.com/watch?v=2RuJ94Xg3jw&ab_channel=RobotsandCode 
+  2. Once the .jar file is create, you need to add it to the libraries in your project
+  3. We then have to include the opencv librbaries that were installed on the computer, this couldook something like         
 `String libopencv_java = "locationToOpenCV/opencv-2.4.13/build/lib/libopencv_java2413.dylib";`
 `System.load(libopencv_java);`
-4. Once this is done, the project should run
+  4. Once this is done, the project should run
 
 ####Windows
 
