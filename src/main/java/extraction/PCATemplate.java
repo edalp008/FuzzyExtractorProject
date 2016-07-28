@@ -18,7 +18,7 @@ import java.util.ArrayList;
 public class   PCATemplate {
 
     private static final int NUM_OF_COMPONENTS = 20;
-    private static final double alpha = 0.4;
+    private static final double alpha = 0.3;
     private Mat featureMatrix;
     private Mat continuousDomain;
     private int numberOfPeopleInTrainingSet;
