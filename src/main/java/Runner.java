@@ -18,7 +18,7 @@ public class Runner {
         ArrayList<ArrayList<Mat>> trainingPeople = Loader.getAllImageByPerson("faces", true);
         //This will call the constructor of the class and will build the codebook, the codebook is stored in the class
         extraction.PCATemplate template = new extraction.PCATemplate(trainingPeople);
-        DataSet singlePerson = Loader.loadOnePerson("faces", 3);
+        DataSet singlePerson = Loader.loadOnePerson("faces", 5);
 
         //checks if user is in database, this fucntion will make the comparison to the codebook
         System.out.println(template.testIfIncluded(singlePerson.getTestFaces()));
