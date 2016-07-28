@@ -11,7 +11,7 @@ import java.util.Arrays;
  * Created by trill on 2016-03-26.
  */
 public class Loader {
-    private static final double FACE_RATIO = 1;
+    private static final double FACE_RATIO = 1.0;
     private static final double IMAGE_RATIO = .8;
     private static final double ALT_IMAGE_RATIO = 0.9;
 
